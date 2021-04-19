@@ -1,4 +1,4 @@
 embedding/*.bin
 /data/*.json
 /data/*.zip
-/model
+/model/*
