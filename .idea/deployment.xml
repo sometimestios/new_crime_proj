@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PublishConfigData" serverName="wang5">
+    <serverData>
+      <paths name="wang5">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/home/songhan/proj/CA_tmp" local="$PROJECT_DIR$" />
+          </mappings>
+        </serverdata>
+      </paths>
+    </serverData>
+  </component>
+</project>
