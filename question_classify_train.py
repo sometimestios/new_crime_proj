@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 from keras.models import Sequential, load_model
 from keras.layers import Conv1D, GlobalAveragePooling1D, MaxPooling1D, Dense, Dropout, LSTM, Bidirectional
 from sklearn.model_selection import train_test_split
+from keras import optimizers
 class QuestionClassify(object):
     def __init__(self):
         self.label_dict = {
@@ -36,7 +37,7 @@ class QuestionClassify(object):
         self.embdding_dict = self.load_embedding(self.embedding_path)
         self.max_length = 60
         self.embedding_size = 300
-        self.dense=6
+        self.dense=10
         self.lstm_modelpath = 'model/lstm_question_classify.h5'
         self.cnn_modelpath = 'model/cnn_question_classify.h5'
         return
@@ -135,8 +136,10 @@ class QuestionClassify(object):
         model.add(GlobalAveragePooling1D())
         model.add(Dropout(0.5))
         model.add(Dense(self.dense, activation='softmax'))
+        opt=optimizers.rmsprop(lr=0.001)
         model.compile(loss='categorical_crossentropy',
-                      optimizer='rmsprop',
+                      #optimizer='rmsprop',
+                      optimizer=opt,
                       metrics=['accuracy'])
         model.summary()
         return model
@@ -147,9 +150,11 @@ class QuestionClassify(object):
         model.add(LSTM(32, return_sequences=True, input_shape=(self.max_length, self.embedding_size)))  # returns a sequence of vectors of dimension 32
         model.add(LSTM(32, return_sequences=True))  # returns a sequence of vectors of dimension 32
         model.add(LSTM(32))  # return a single vector of dimension 32
+        model.add(Dropout(0.5))
         model.add(Dense(self.dense, activation='softmax'))
+        opt=optimizers.rmsprop(lr=0.001)
         model.compile(loss='categorical_crossentropy',
-                      optimizer='rmsprop',
+                      optimizer=opt,
                       metrics=['accuracy'])
         model.summary()
         return model
@@ -158,9 +163,9 @@ class QuestionClassify(object):
     def train_cnn(self):
         X_train, Y_train, X_test, Y_test = self.split_trainset()
         model = self.build_cnn_model()
-        history =model.fit(X_train, Y_train, batch_size=100, epochs=50, validation_data=(X_test, Y_test))
+        history =model.fit(X_train, Y_train, batch_size=200, epochs=30, validation_data=(X_test, Y_test))
         model.save(self.cnn_modelpath)
-        self.draw_pic(history)
+        self.draw_pic(history,'CNN')
 
     '''训练lstm模型'''
     # batch_size:每次使用的样本数
@@ -168,11 +173,11 @@ class QuestionClassify(object):
     def train_lstm(self):
         X_train, Y_train, X_test, Y_test = self.split_trainset()
         model = self.build_lstm_model()
-        history = model.fit(X_train, Y_train, batch_size=100, epochs=50, validation_data=(X_test, Y_test))
+        history = model.fit(X_train, Y_train, batch_size=150, epochs=30, validation_data=(X_test, Y_test))
         model.save(self.lstm_modelpath)
-        self.draw_pic(history)
+        self.draw_pic(history,'LSTM')
     # 画图
-    def draw_pic(self,history):
+    def draw_pic(self,history,model):
         acc = history.history['acc']  # 获取训练集准确性数据
         val_acc = history.history['val_acc']  # 获取验证集准确性数据
         #val_acc=list(map(lambda x:x+0.18,val_acc))
@@ -182,12 +187,12 @@ class QuestionClassify(object):
         plt.plot(epochs, acc, 'bo', label='Trainning acc')  # 以epochs为横坐标，以训练集准确性为纵坐标
         plt.plot(epochs, val_acc, 'b', label='Vaildation acc')  # 以epochs为横坐标，以验证集准确性为纵坐标
         plt.legend()  # 绘制图例，即标明图中的线段代表何种含义
-        plt.savefig(self.train_file[:-4]+"_acc.png")
+        plt.savefig("{}_{}_{}.png".format(self.train_file[:-4],model,"acc"))
         plt.figure()  # 创建一个新的图表
         plt.plot(epochs, loss, 'bo', label='Trainning loss')
         plt.plot(epochs, val_loss, 'b', label='Vaildation loss')
         plt.legend()  ##绘制图例，即标明图中的线段代表何种含义
-        plt.savefig(self.train_file[:-4]+"_loss.png")
+        plt.savefig("{}_{}_{}.png".format(self.train_file[:-4],model,"loss"))
         print("acc=",acc)
         print("val_acc=",val_acc)
         print("loss=",loss)
@@ -204,6 +209,7 @@ class QuestionClassify(object):
 if __name__ == '__main__':
 
     handler = QuestionClassify()
-    handler.train_file = "data/6fenlei48000_question_train.txt"
+    handler.train_file = "data/6fenlei42000_question_train.txt"
+    handler.dense=6
     #handler.train_cnn()
     handler.train_lstm()
