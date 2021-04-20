@@ -10,7 +10,7 @@ reverse_dict = {'婚姻家庭': '0', '劳动纠纷': '1', '交通事故': '2', '
 count_dict = {'婚姻家庭': 0, '劳动纠纷': 0, '交通事故': 0, '债权债务': 0, '刑事辩护': 0, '合同纠纷': 0, '房产纠纷': 0, '侵权': 0,
               '公司法': 0, '医疗纠纷': 0, '拆迁安置': 0, '行政诉讼': 0, '建设工程': 0}
 
-def deal(src_path, des_path):
+def deal(src_path, des_path,n):
     src_file = open(src_path, 'r', encoding='utf-8')
     des_file = open(des_path, 'w', encoding='utf-8')
     count = 0
@@ -21,18 +21,20 @@ def deal(src_path, des_path):
         cate=fileJson["category"]
         if cate not in reverse_dict:
             continue
-        if count_dict[cate]>5000-1:
+        if count_dict[cate]>n-1:
             continue
         lable = reverse_dict[cate]
         count_dict[cate]+=1
         des_file.write(question + "##" + lable + "\n")
         count += 1
-        if count >= 30000:
+        if count >= n*len(reverse_dict):
             break
     print("{} case counted".format(count))
     print(count_dict)
     src_file.close()
     des_file.close()
-
-deal("data/qa_corpus.json", "data/6fenlei3W_question_train.txt")
+cat=len(reverse_dict)
+n=7000
+count=cat*n
+deal("data/qa_corpus.json", "data/{}fenlei{}_question_train.txt".format(cat,count),n)
 

@@ -12,6 +12,7 @@ import jieba.posseg as pseg
 import matplotlib.pyplot as plt
 from keras.models import Sequential, load_model
 from keras.layers import Conv1D, GlobalAveragePooling1D, MaxPooling1D, Dense, Dropout, LSTM, Bidirectional
+from sklearn.model_selection import train_test_split
 class QuestionClassify(object):
     def __init__(self):
         self.label_dict = {
@@ -157,7 +158,7 @@ class QuestionClassify(object):
     def train_cnn(self):
         X_train, Y_train, X_test, Y_test = self.split_trainset()
         model = self.build_cnn_model()
-        history =model.fit(X_train, Y_train, batch_size=100, epochs=20, validation_data=(X_test, Y_test))
+        history =model.fit(X_train, Y_train, batch_size=100, epochs=50, validation_data=(X_test, Y_test))
         model.save(self.cnn_modelpath)
         self.draw_pic(history)
 
@@ -167,7 +168,7 @@ class QuestionClassify(object):
     def train_lstm(self):
         X_train, Y_train, X_test, Y_test = self.split_trainset()
         model = self.build_lstm_model()
-        history = model.fit(X_train, Y_train, batch_size=100, epochs=2, validation_data=(X_test, Y_test))
+        history = model.fit(X_train, Y_train, batch_size=100, epochs=50, validation_data=(X_test, Y_test))
         model.save(self.lstm_modelpath)
         self.draw_pic(history)
     # 画图
@@ -181,29 +182,28 @@ class QuestionClassify(object):
         plt.plot(epochs, acc, 'bo', label='Trainning acc')  # 以epochs为横坐标，以训练集准确性为纵坐标
         plt.plot(epochs, val_acc, 'b', label='Vaildation acc')  # 以epochs为横坐标，以验证集准确性为纵坐标
         plt.legend()  # 绘制图例，即标明图中的线段代表何种含义
+        plt.savefig(self.train_file[:-4]+"_acc.png")
         plt.figure()  # 创建一个新的图表
         plt.plot(epochs, loss, 'bo', label='Trainning loss')
-        plt.save(self.train_file[:-4]+"_acc.png")
         plt.plot(epochs, val_loss, 'b', label='Vaildation loss')
         plt.legend()  ##绘制图例，即标明图中的线段代表何种含义
         plt.savefig(self.train_file[:-4]+"_loss.png")
+        print("acc=",acc)
+        print("val_acc=",val_acc)
+        print("loss=",loss)
+        print("val_loss=",val_loss)
         #plt.show()  # 显示所有图表
 
     '''划分数据集,按一定比例划分训练集和测试集'''
     def split_trainset(self):
         X, Y = self.load_traindata()
-        split_rate = 0.8
-        indx = int(len(X)*split_rate)
-        X_train = X[:indx]
-        Y_train = Y[:indx]
-        X_test = X[indx:]
-        Y_test = Y[indx:]
+        X_train,X_test, Y_train, Y_test = train_test_split(X,Y,test_size=0.2, random_state=100)
         return X_train, Y_train, X_test, Y_test
 
 
 if __name__ == '__main__':
 
     handler = QuestionClassify()
-    handler.train_file = "data/6fenlei3W_question_train.txt"
+    handler.train_file = "data/6fenlei48000_question_train.txt"
     #handler.train_cnn()
     handler.train_lstm()
