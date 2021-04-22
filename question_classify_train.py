@@ -19,10 +19,10 @@ class QuestionClassify(object):
         self.label_dict = {
             0:"婚姻家庭",
             1:"劳动纠纷",
-            2:"交通事故",
-            3:"债权债务",
-            4:"刑事辩护",
-            5:"合同纠纷",
+#            2:"交通事故",
+#            3:"债权债务",
+#            4:"刑事辩护",
+#            5:"合同纠纷",
 #            6:"房产纠纷",
 #            7:"侵权",
 #            8:"公司法",
@@ -152,9 +152,9 @@ class QuestionClassify(object):
         model.add(LSTM(32))  # return a single vector of dimension 32
         model.add(Dropout(0.5))
         model.add(Dense(self.dense, activation='softmax'))
-        opt=optimizers.rmsprop(lr=0.001)
+        #opt=optimizers.rmsprop(lr=0.001)
         model.compile(loss='categorical_crossentropy',
-                      optimizer=opt,
+                      optimizer='rmsprop',
                       metrics=['accuracy'])
         model.summary()
         return model
@@ -163,7 +163,7 @@ class QuestionClassify(object):
     def train_cnn(self):
         X_train, Y_train, X_test, Y_test = self.split_trainset()
         model = self.build_cnn_model()
-        history =model.fit(X_train, Y_train, batch_size=200, epochs=30, validation_data=(X_test, Y_test))
+        history =model.fit(X_train, Y_train, batch_size=200, epochs=10, validation_data=(X_test, Y_test))
         model.save(self.cnn_modelpath)
         self.draw_pic(history,'CNN')
 
@@ -173,7 +173,7 @@ class QuestionClassify(object):
     def train_lstm(self):
         X_train, Y_train, X_test, Y_test = self.split_trainset()
         model = self.build_lstm_model()
-        history = model.fit(X_train, Y_train, batch_size=150, epochs=30, validation_data=(X_test, Y_test))
+        history = model.fit(X_train, Y_train, batch_size=150, epochs=10, validation_data=(X_test, Y_test))
         model.save(self.lstm_modelpath)
         self.draw_pic(history,'LSTM')
     # 画图
@@ -209,7 +209,7 @@ class QuestionClassify(object):
 if __name__ == '__main__':
 
     handler = QuestionClassify()
-    handler.train_file = "data/6fenlei42000_question_train.txt"
-    handler.dense=6
+    handler.train_file = "data/2fenlei16000_question_train.txt"
+    handler.dense=2
     #handler.train_cnn()
     handler.train_lstm()
